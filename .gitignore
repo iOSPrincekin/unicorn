@@ -89,3 +89,8 @@ rust_build
 [Oo]bj/
 packages/
 cmocka/
+
+build/
+build-xcode/
+
+mytests/test1/test1
