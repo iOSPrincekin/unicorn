@@ -28,6 +28,15 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 make
 ```
 
+- Change the include path
+
+1.run build.sh in commandline
+
+2.change the '-I/Users/lee/Desktop/TONGDUN/demo/my/unicorn/build-xcode' to '-I/Users/lee/Desktop/TONGDUN/demo/my/unicorn/build' in the unicorn.xcodeproj
+
+3.run project target again,worked!
+
+
 ## Native build on Windows, with MSVC
 
 This builds Unicorn2 on Windows, using Microsoft MSVC compiler.
