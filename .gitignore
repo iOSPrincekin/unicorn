@@ -82,6 +82,7 @@ config.log
 x64/
 Win32/
 build/
+build-xcode/
 build_*
 rust_build
 [Bb]in/
