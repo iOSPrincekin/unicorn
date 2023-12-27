@@ -167,11 +167,92 @@ void translator_loop_temp_check(DisasContextBase *db);
         return fullname ## _swap(tcg_ctx, env, pc, false);                       \
     }
 
+#if DEBUG_UNICORN
+static inline uint8_t
+translator_ldub_swap(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc, bool do_swap)
+{
+    uint8_t ret = cpu_ldub_code(env, pc);
+    if (do_swap) {
+        ret = (ret);
+    }
+    return ret;
+}
+                                                                    
+static inline uint8_t translator_ldub(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc)
+{
+    return translator_ldub_swap(tcg_ctx, env, pc, false);
+}
+
+
+static inline int16_t
+translator_ldsw_swap(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc, bool do_swap)
+{
+    int16_t ret = cpu_ldsw_code(env, pc);
+    if (do_swap) {
+        ret = bswap16(ret);
+    }
+    return ret;
+}
+                                                                    
+static inline int16_t translator_ldsw(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc)
+{
+    return translator_ldsw_swap(tcg_ctx, env, pc, false);
+}
+
+static inline uint16_t
+translator_lduw_swap(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc, bool do_swap)
+{
+    uint16_t ret = cpu_lduw_code(env, pc);
+    if (do_swap) {
+        ret = bswap16(ret);
+    }
+    return ret;
+}
+                                                                    
+static inline uint16_t translator_lduw(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc)
+{
+    return translator_lduw_swap(tcg_ctx, env, pc, false);
+}
+
+static inline uint32_t
+translator_ldl_swap(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc, bool do_swap)
+{
+    uint32_t ret = cpu_ldl_code(env, pc);
+    if (do_swap) {
+        ret = bswap32(ret);
+    }
+    return ret;
+}
+                                                                    
+static inline uint32_t translator_ldl(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc)
+{
+    return translator_ldl_swap(tcg_ctx, env, pc, false);
+}
+
+static inline uint64_t
+translator_ldq_swap(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc, bool do_swap)
+{
+    uint64_t ret = cpu_ldq_code(env, pc);
+    if (do_swap) {
+        ret = bswap64(ret);
+    }
+    return ret;
+}
+                                                                    
+static inline uint64_t translator_ldq(TCGContext *tcg_ctx, CPUArchState *env, abi_ptr pc)
+{
+    return translator_ldq_swap(tcg_ctx, env, pc, false);
+}
+
+#else
 GEN_TRANSLATOR_LD(translator_ldub, uint8_t, cpu_ldub_code, /* no swap */)
 GEN_TRANSLATOR_LD(translator_ldsw, int16_t, cpu_ldsw_code, bswap16)
 GEN_TRANSLATOR_LD(translator_lduw, uint16_t, cpu_lduw_code, bswap16)
 GEN_TRANSLATOR_LD(translator_ldl, uint32_t, cpu_ldl_code, bswap32)
 GEN_TRANSLATOR_LD(translator_ldq, uint64_t, cpu_ldq_code, bswap64)
+
+#endif
+
 #undef GEN_TRANSLATOR_LD
 
 #endif  /* EXEC__TRANSLATOR_H */

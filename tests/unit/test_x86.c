@@ -11,10 +11,61 @@ static void uc_common_setup(uc_engine **uc, uc_arch arch, uc_mode mode,
     OK(uc_mem_write(*uc, code_start, code, size));
 }
 
+
 typedef struct _INSN_IN_RESULT {
     uint32_t port;
     int size;
 } INSN_IN_RESULT;
+
+static void UC_HOOK_MEM_READ_UNMAPPED_callback(uc_engine *uc, uint32_t port, int size,
+                                 void *user_data)
+{
+    INSN_IN_RESULT *result = (INSN_IN_RESULT *)user_data;
+}
+
+static void UC_HOOK_MEM_WRITE_UNMAPPED_callback(uc_engine *uc, uint32_t port, int size,
+                                 void *user_data)
+{
+    INSN_IN_RESULT *result = (INSN_IN_RESULT *)user_data;
+}
+
+static void UC_HOOK_MEM_READ_callback(uc_engine *uc, uint32_t port, int size,
+                                 void *user_data)
+{
+    INSN_IN_RESULT *result = (INSN_IN_RESULT *)user_data;
+}
+
+
+static void test_x86_functioncall(void)
+{
+    uc_engine *uc;
+    uc_hook hook;
+    char code[] = "\xb8\x0a\x00\x00\x00\xbb\x14\x00\x00\x00\x01\xc3"; // IN eax, 0x10
+
+    INSN_IN_RESULT result;
+
+    uc_common_setup(&uc, UC_ARCH_X86, UC_MODE_32, code, sizeof(code) - 1);
+    int32_t r_eax = 199;
+    OK(uc_reg_write(uc, UC_X86_REG_EAX, &r_eax));
+    
+    OK(uc_hook_add(uc, &hook, UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_READ_UNMAPPED_callback, &result, 1, 0,
+                   UC_X86_INS_IN));
+    
+    OK(uc_hook_add(uc, &hook, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED_callback, &result, 1, 0,
+                   UC_X86_INS_IN));
+    
+    OK(uc_hook_add(uc, &hook, UC_HOOK_MEM_READ, UC_HOOK_MEM_READ_callback, &result, 1, 0,
+                   UC_X86_INS_IN));
+
+
+    OK(uc_emu_start(uc, code_start, code_start + sizeof(code) - 1, 0, 0));
+    OK(uc_reg_read(uc, UC_X86_REG_EAX, &r_eax));
+
+    printf("r_eax--::%d",r_eax);
+    OK(uc_hook_del(uc, hook));
+    OK(uc_close(uc));
+}
+
 
 static void test_x86_in_callback(uc_engine *uc, uint32_t port, int size,
                                  void *user_data)
@@ -1230,6 +1281,7 @@ static void test_x86_lazy_mapping(void)
 }
 
 TEST_LIST = {
+    {"test_x86_functioncall", test_x86_functioncall},
     {"test_x86_in", test_x86_in},
     {"test_x86_out", test_x86_out},
     {"test_x86_mem_hook_all", test_x86_mem_hook_all},

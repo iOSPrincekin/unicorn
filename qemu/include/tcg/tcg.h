@@ -1353,8 +1353,16 @@ static inline unsigned get_mmuidx(TCGMemOpIdx oi)
 #ifdef HAVE_TCG_QEMU_TB_EXEC
 uintptr_t tcg_qemu_tb_exec(CPUArchState *env, uint8_t *tb_ptr);
 #else
+
+#if DEBUG_UNICORN
+static uintptr_t tcg_qemu_tb_exec(CPUArchState* env, uint8_t* tb_ptr){
+    return ((uintptr_t (*)(void *, void *))env->uc->tcg_ctx->code_gen_prologue)(env, tb_ptr);
+}
+#else
 # define tcg_qemu_tb_exec(env, tb_ptr) \
     ((uintptr_t (*)(void *, void *))env->uc->tcg_ctx->code_gen_prologue)(env, tb_ptr)
+#endif
+
 #endif
 
 void tcg_register_jit(TCGContext *s, void *buf, size_t buf_size);
