@@ -158,6 +158,9 @@ static int tcg_out_ldst_finalize(TCGContext *s);
 #if TCG_TARGET_INSN_UNIT_SIZE == 1
 static QEMU_UNUSED_FUNC inline void tcg_out8(TCGContext *s, uint8_t v)
 {
+    if(((uint64_t)s->code_ptr & 0xfff) == 0x18e || ((uint64_t)s->code_ptr & 0xfff) == 0x138){
+        printf("s->code_ptr--::0x%x,v-::0x%x",s->code_ptr,v);
+    }
     *s->code_ptr++ = v;
 }
 
